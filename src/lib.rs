@@ -78,17 +78,16 @@ pub struct FungibleToken {
 
 #[near_bindgen]
 impl FungibleToken {
-    pub fn deposit(&mut self) {
+    pub fn deposit(&mut self, amount: U128) {
         let initial_storage = env::storage_usage();
 
         ///TODO: Use value attached to tx.
-        /// Panic on no value
-        let amount = _amount.into();
-        // if amount == 0 {
-        //     env::panic(b"No value");
-        // }
+        let amount = amount.into();
+        if amount == 0 {
+            env::panic(b"Deposit amount must be greater than zero");
+        }
 
-        ///TODO: use predecessor account ID
+        // Top up account balance
         let predecessor_account_id = env::predecessor_account_id();
         let mut account = self.get_account(&predecessor_account_id);
         account.balance += amount;
@@ -97,6 +96,13 @@ impl FungibleToken {
         //Todo could total supply instead be the near balance of the contract?
         // Increase total supply
         self.total_supply += amount;
+
+        // Check we have enough attached deposit
+        let attached_deposit = env::attached_deposit();
+        ///Todo this needs to also factor in amount needed for storage
+        if attached_deposit < amount {
+            env::panic(b"Not enough Near attached for deposit");
+        }
 
         self.refund_storage(initial_storage);
     }

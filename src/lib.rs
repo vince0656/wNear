@@ -107,6 +107,35 @@ impl FungibleToken {
         self.refund_storage(initial_storage);
     }
 
+    pub fn withdraw(&mut self, amount: U128) {
+        let initial_storage = env::storage_usage();
+
+        let amount = amount.into();
+        if amount == 0 {
+            env::panic(b"Withdrawal amount must be greater than zero");
+        }
+
+        let predecessor_account_id = env::predecessor_account_id();
+        let mut account = self.get_account(&predecessor_account_id);
+
+        if account.balance < amount {
+            env::panic(b"You cannot withdraw more than your balance");
+        }
+
+        account.balance -= amount;
+
+        // Saving the account back to the state.
+        self.set_account(&predecessor_account_id, &account);
+
+        //Todo could total supply instead be the near balance of the contract?
+        // Increase total supply
+        self.total_supply -= amount;
+
+        //TODO: send near `amount` to predecessor_account_id
+
+        self.refund_storage(initial_storage);
+    }
+
     /// Increments the `allowance` for `escrow_account_id` by `amount` on the account of the caller of this contract
     /// (`predecessor_id`) who is the balance owner.
     /// Requirements:

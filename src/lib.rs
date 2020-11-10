@@ -18,7 +18,7 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;
 use near_sdk::json_types::U128;
-use near_sdk::{env, near_bindgen, AccountId, Balance, PanicOnDefault, Promise, StorageUsage};
+use near_sdk::{env, near_bindgen, AccountId, Balance, Promise, StorageUsage};
 
 #[global_allocator]
 static ALLOC: near_sdk::wee_alloc::WeeAlloc<'_> = near_sdk::wee_alloc::WeeAlloc::INIT;
@@ -67,7 +67,7 @@ impl Account {
 }
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+#[derive(BorshDeserialize, BorshSerialize, Default)]
 pub struct FungibleToken {
     /// sha256(AccountID) -> Account details.
     pub accounts: LookupMap<Vec<u8>, Account>,
@@ -78,12 +78,6 @@ pub struct FungibleToken {
 
 #[near_bindgen]
 impl FungibleToken {
-    #[init]
-    pub fn new() -> Self {
-        assert!(!env::state_exists(), "Already initialized");
-        Self
-    }
-
     pub fn deposit(&mut self) {
         let initial_storage = env::storage_usage();
 

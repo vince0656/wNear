@@ -78,17 +78,33 @@ pub struct FungibleToken {
 
 #[near_bindgen]
 impl FungibleToken {
-    ///TODO: total supply shouldn't be supplied upfront and therefore can drop owner getting all balance
-    /// Initializes the contract with the given total supply owned by the given `owner_id`.
     #[init]
-    pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
-        let total_supply = total_supply.into();
+    pub fn new() -> Self {
         assert!(!env::state_exists(), "Already initialized");
-        let mut ft = Self { accounts: LookupMap::new(b"a".to_vec()), total_supply };
-        let mut account = ft.get_account(&owner_id);
-        account.balance = total_supply;
-        ft.set_account(&owner_id, &account);
-        ft
+        Self
+    }
+
+    pub fn deposit(&mut self) {
+        let initial_storage = env::storage_usage();
+
+        ///TODO: Use value attached to tx.
+        /// Panic on no value
+        let amount = _amount.into();
+        // if amount == 0 {
+        //     env::panic(b"No value");
+        // }
+
+        ///TODO: use predecessor account ID
+        let predecessor_account_id = env::predecessor_account_id();
+        let mut account = self.get_account(&predecessor_account_id);
+        account.balance += amount;
+        self.set_account(&predecessor_account_id, &account);
+
+        //Todo could total supply instead be the near balance of the contract?
+        // Increase total supply
+        self.total_supply += amount;
+
+        self.refund_storage(initial_storage);
     }
 
     /// Increments the `allowance` for `escrow_account_id` by `amount` on the account of the caller of this contract

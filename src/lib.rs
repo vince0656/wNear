@@ -117,7 +117,6 @@ impl FungibleToken {
         // Check we have enough attached deposit
         let current_storage = env::storage_usage();
         let attached_deposit = env::attached_deposit();
-        ///Todo this needs to also factor in amount needed for storage
         let required_deposit_for_tokens_and_storage = if current_storage > initial_storage {
             (Balance::from(current_storage - initial_storage) * STORAGE_PRICE_PER_BYTE)
             + deposit_amount
@@ -125,9 +124,32 @@ impl FungibleToken {
             deposit_amount
         };
 
-        ///env::panic(b"Not enough Near attached for deposit");
+        assert!(
+            required_deposit_for_tokens_and_storage <= attached_deposit,
+            "The required attached deposit is {}, but the given attached deposit is is {}",
+            required_deposit_for_tokens_and_storage,
+            attached_deposit,
+        );
 
-        self.refund_storage(initial_storage);
+        //TODO send back any money that is sent over value for required_deposit_for_tokens_and_storage
+        // let refund_amount = if current_storage > initial_storage {
+        //     let required_deposit =
+        //         Balance::from(current_storage - initial_storage) * STORAGE_PRICE_PER_BYTE;
+        //     assert!(
+        //         required_deposit <= attached_deposit,
+        //         "The required attached deposit is {}, but the given attached deposit is is {}",
+        //         required_deposit,
+        //         attached_deposit,
+        //     );
+        //     attached_deposit - required_deposit
+        // } else {
+        //     attached_deposit
+        //         + Balance::from(initial_storage - current_storage) * STORAGE_PRICE_PER_BYTE
+        // };
+        // if refund_amount > 0 {
+        //     env::log(format!("Refunding {} tokens for storage", refund_amount).as_bytes());
+        //     Promise::new(env::predecessor_account_id()).transfer(refund_amount);
+        // }
     }
 
     pub fn withdraw(&mut self, amount: U128) {

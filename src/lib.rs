@@ -67,7 +67,7 @@ impl Account {
 }
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, Default)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct FungibleToken {
     /// sha256(AccountID) -> Account details.
     pub accounts: LookupMap<Vec<u8>, Account>,
@@ -76,13 +76,30 @@ pub struct FungibleToken {
     pub total_supply: Balance,
 }
 
+impl Default for FungibleToken {
+    fn default() -> Self {
+        env::panic(b"Contract should be initialized before the usage.")
+    }
+}
+
 #[near_bindgen]
 impl FungibleToken {
+    #[init]
+    pub fn new() -> Self {
+        assert!(!env::state_exists(), "Already initialized");
+        let total_supply = Balance::from(0u128);
+        Self {
+            accounts: LookupMap::new(b"a".to_vec()),
+            total_supply
+        }
+    }
+
+    #[payable]
     pub fn deposit(&mut self, deposit_amount: U128) {
         let initial_storage = env::storage_usage();
 
         ///TODO: Use value attached to tx.
-        let deposit_amount = deposit_amount.into();
+        let deposit_amount: Balance = deposit_amount.into();
         if deposit_amount == 0 {
             env::panic(b"Deposit amount must be greater than zero");
         }

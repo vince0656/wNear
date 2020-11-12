@@ -130,6 +130,8 @@ impl FungibleToken {
             attached_deposit,
         );
 
+        env::log(format!("{} wNear tokens minted", deposit_amount).as_bytes());
+
         // Send back any money that is sent over value for required_deposit_for_tokens_and_storage
         let refund_amount = if attached_deposit > required_deposit_for_tokens_and_storage {
             attached_deposit - required_deposit_for_tokens_and_storage
@@ -143,10 +145,12 @@ impl FungibleToken {
         }
     }
 
+    //TODO: is payable needed to pay for storage costs?
+    #[payable]
     pub fn withdraw(&mut self, amount: U128) {
         let initial_storage = env::storage_usage();
 
-        let amount = amount.into();
+        let amount: Balance = amount.into();
         if amount == 0 {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
@@ -163,11 +167,12 @@ impl FungibleToken {
         // Saving the account back to the state.
         self.set_account(&predecessor_account_id, &account);
 
-        //Todo could total supply instead be the near balance of the contract?
-        // Increase total supply
+        // Decrease total supply
         self.total_supply -= amount;
 
-        //TODO: send near `amount` to predecessor_account_id
+        // Send near `amount` to predecessor_account_id
+        env::log(format!("Withdrawal of {} wNear", amount).as_bytes());
+        Promise::new(predecessor_account_id).transfer(amount);
 
         self.refund_storage(initial_storage);
     }

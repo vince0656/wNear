@@ -407,6 +407,7 @@ mod w_near_tests {
     fn test_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
+
         let mut contract = FungibleToken::new();
         context.storage_usage = env::storage_usage();
 
@@ -419,16 +420,31 @@ mod w_near_tests {
         // TODO: check contract balance == deposit amount
         assert_eq!(contract.get_balance(carol()).0, deposit_amount);
         assert_eq!(contract.get_total_supply().0, deposit_amount);
+    }
 
-        // let transfer_amount = total_supply / 3;
-        // contract.transfer(bob(), transfer_amount.into());
-        // context.storage_usage = env::storage_usage();
-        // context.account_balance = env::account_balance();
-        //
-        // context.is_view = true;
-        // context.attached_deposit = 0;
-        // testing_env!(context.clone());
-        // assert_eq!(contract.get_balance(carol()).0, (total_supply - transfer_amount));
-        // assert_eq!(contract.get_balance(bob()).0, transfer_amount);
+    #[test]
+    fn test_transfer_after_deposit() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        // get some wNear tokens
+        contract.deposit(deposit_amount.into());
+
+        let transfer_amount = 1_000_000_000_000_000u128 / 3;
+        contract.transfer(bob(), transfer_amount.into());
+        context.storage_usage = env::storage_usage();
+        context.account_balance = env::account_balance();
+
+        context.is_view = true;
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+        assert_eq!(contract.get_balance(carol()).0, (1_000_000_000_000_000u128 - transfer_amount));
+        assert_eq!(contract.get_balance(bob()).0, transfer_amount);
     }
 }

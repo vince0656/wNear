@@ -223,6 +223,14 @@ impl FungibleToken {
     #[payable]
     pub fn transfer_from(&mut self, owner_id: AccountId, new_owner_id: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
+
+        //TODO: add test for this
+        // Stop people accidentally sending tokens to the contract
+        assert_ne!(
+            new_owner_id, env::current_account_id(),
+            "Invalid transfer to this contract"
+        );
+
         assert!(
             env::is_valid_account_id(new_owner_id.as_bytes()),
             "New owner's account ID is invalid"
@@ -286,6 +294,11 @@ impl FungibleToken {
     /// Returns balance of the `owner_id` account.
     pub fn get_balance(&self, owner_id: AccountId) -> U128 {
         self.get_account(&owner_id).balance.into()
+    }
+
+    //TODO: docs + test
+    pub fn get_near_balance(&self) -> U128 {
+        env::account_balance().into()
     }
 
     /// Returns current allowance of `escrow_account_id` for the account of `owner_id`.
@@ -415,7 +428,11 @@ mod w_near_tests {
         context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
         testing_env!(context.clone());
 
+        //assert_eq!(contract.get_near_balance().0, 0);
+
         contract.deposit(deposit_amount.into());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
 
         // TODO: check contract balance == deposit amount
         assert_eq!(contract.get_balance(carol()).0, deposit_amount);

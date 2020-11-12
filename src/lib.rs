@@ -98,7 +98,7 @@ impl FungibleToken {
     pub fn deposit(&mut self, deposit_amount: U128) {
         let initial_storage = env::storage_usage();
 
-        ///TODO: Use value attached to tx.
+        // As attached deposit includes tokens for storage, deposit amount needs to be explicit
         let deposit_amount: Balance = deposit_amount.into();
         if deposit_amount == 0 {
             env::panic(b"Deposit amount must be greater than zero");
@@ -110,7 +110,6 @@ impl FungibleToken {
         account.balance += deposit_amount;
         self.set_account(&predecessor_account_id, &account);
 
-        //Todo could total supply instead be the near balance of the contract?
         // Increase total supply
         self.total_supply += deposit_amount;
 
@@ -125,31 +124,23 @@ impl FungibleToken {
         };
 
         assert!(
-            required_deposit_for_tokens_and_storage <= attached_deposit,
+            attached_deposit >= required_deposit_for_tokens_and_storage,
             "The required attached deposit is {}, but the given attached deposit is is {}",
             required_deposit_for_tokens_and_storage,
             attached_deposit,
         );
 
-        //TODO send back any money that is sent over value for required_deposit_for_tokens_and_storage
-        // let refund_amount = if current_storage > initial_storage {
-        //     let required_deposit =
-        //         Balance::from(current_storage - initial_storage) * STORAGE_PRICE_PER_BYTE;
-        //     assert!(
-        //         required_deposit <= attached_deposit,
-        //         "The required attached deposit is {}, but the given attached deposit is is {}",
-        //         required_deposit,
-        //         attached_deposit,
-        //     );
-        //     attached_deposit - required_deposit
-        // } else {
-        //     attached_deposit
-        //         + Balance::from(initial_storage - current_storage) * STORAGE_PRICE_PER_BYTE
-        // };
-        // if refund_amount > 0 {
-        //     env::log(format!("Refunding {} tokens for storage", refund_amount).as_bytes());
-        //     Promise::new(env::predecessor_account_id()).transfer(refund_amount);
-        // }
+        // Send back any money that is sent over value for required_deposit_for_tokens_and_storage
+        let refund_amount = if attached_deposit > required_deposit_for_tokens_and_storage {
+            attached_deposit - required_deposit_for_tokens_and_storage
+        } else {
+            0
+        };
+
+        if refund_amount > 0 {
+            env::log(format!("Refunding {} excess tokens", refund_amount).as_bytes());
+            Promise::new(predecessor_account_id).transfer(refund_amount);
+        }
     }
 
     pub fn withdraw(&mut self, amount: U128) {

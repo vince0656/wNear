@@ -447,4 +447,85 @@ mod w_near_tests {
         assert_eq!(contract.get_balance(carol()).0, (1_000_000_000_000_000u128 - transfer_amount));
         assert_eq!(contract.get_balance(bob()).0, transfer_amount);
     }
+
+    #[test]
+    #[should_panic(expected = "The new owner should be different from the current owner")]
+    fn test_transfer_fail_self() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        // get some wNear tokens
+        contract.deposit(deposit_amount.into());
+
+        let transfer_amount = 1_000_000_000_000_000u128;
+        contract.transfer(carol(), transfer_amount.into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Can not increment allowance for yourself")]
+    fn test_self_inc_allowance_fail() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+
+        context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
+        testing_env!(context.clone());
+
+        contract.inc_allowance(carol(), (5).into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Can not decrement allowance for yourself")]
+    fn test_self_dec_allowance_fail() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
+        testing_env!(context.clone());
+        contract.dec_allowance(carol(), (10).into());
+    }
+
+    #[test]
+    fn test_saturating_dec_allowance() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
+        testing_env!(context.clone());
+        contract.dec_allowance(bob(), (1_000_000_000_000_000u128 / 2).into());
+        assert_eq!(contract.get_allowance(carol(), bob()), 0.into())
+    }
+
+    #[test]
+    fn test_saturating_inc_allowance() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
+        testing_env!(context.clone());
+        let max_u128 = std::u128::MAX;
+        contract.inc_allowance(bob(), max_u128.into());
+        contract.inc_allowance(bob(), max_u128.into());
+        assert_eq!(contract.get_allowance(carol(), bob()), std::u128::MAX.into())
+    }
+
+    #[test]
+    #[should_panic(
+    expected = "The required attached deposit is 25700000000000000000000, but the given attached deposit is is 0"
+    )]
+    fn test_self_allowance_fail_no_deposit() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+        contract.inc_allowance(bob(), 5.into());
+    }
 }

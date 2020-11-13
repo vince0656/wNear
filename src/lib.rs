@@ -92,6 +92,7 @@ impl FungibleToken {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
+        //TODO: the core logic could be in its own mint and burn methods
         // Top up account balance
         let predecessor_account_id = env::predecessor_account_id();
         let mut account = self.get_account(&predecessor_account_id);

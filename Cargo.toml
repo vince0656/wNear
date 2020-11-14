@@ -11,6 +11,7 @@ crate-type = ["cdylib", "rlib"]
 near-sdk = "2.0.0"
 
 [profile.release]
+codegen-units=1
 opt-level = "s"
 debug = false
 panic = "abort"

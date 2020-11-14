@@ -95,12 +95,7 @@ impl FungibleToken {
         //TODO: the core logic could be in its own mint and burn methods
         // Top up account balance
         let predecessor_account_id = env::predecessor_account_id();
-        let mut account = self.get_account(&predecessor_account_id);
-        account.balance += deposit_amount;
-        self.set_account(&predecessor_account_id, &account);
-
-        // Increase total supply
-        self.total_supply += deposit_amount;
+        self.mint(&predecessor_account_id, deposit_amount.clone());
 
         // Check we have enough attached deposit
         let current_storage = env::storage_usage();
@@ -317,6 +312,15 @@ impl FungibleToken {
 }
 
 impl FungibleToken {
+    fn mint(&mut self, beneficiary: &AccountId, amount: Balance) {
+        let mut account = self.get_account(&beneficiary);
+        account.balance += amount;
+        self.set_account(&beneficiary, &account);
+
+        // Increase total supply
+        self.total_supply += amount;
+    }
+
     /// Helper method to get the account details for `owner_id`.
     fn get_account(&self, owner_id: &AccountId) -> Account {
         assert!(env::is_valid_account_id(owner_id.as_bytes()), "Owner's account ID is invalid");

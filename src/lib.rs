@@ -82,11 +82,13 @@ impl FungibleToken {
         }
     }
 
+    /// Deposit NEAR and send wNear to the predecessor account
     #[payable]
     pub fn deposit(&mut self, deposit_amount: U128) {
         self.deposit_to(env::predecessor_account_id(), deposit_amount);
     }
 
+    /// Deposit NEAR and send wNear to a specific recipient rather than the predecessor account
     #[payable]
     pub fn deposit_to(&mut self, recipient: AccountId, deposit_amount: U128) {
         let initial_storage = env::storage_usage();
@@ -316,10 +318,10 @@ impl FungibleToken {
 }
 
 impl FungibleToken {
-    fn mint(&mut self, beneficiary: &AccountId, amount: Balance) {
-        let mut account = self.get_account(&beneficiary);
+    fn mint(&mut self, recipient: &AccountId, amount: Balance) {
+        let mut account = self.get_account(&recipient);
         account.balance += amount;
-        self.set_account(&beneficiary, &account);
+        self.set_account(&recipient, &account);
 
         // Increase total supply
         self.total_supply += amount;

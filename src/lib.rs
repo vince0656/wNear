@@ -84,6 +84,11 @@ impl FungibleToken {
 
     #[payable]
     pub fn deposit(&mut self, deposit_amount: U128) {
+        self.deposit_to(env::predecessor_account_id(), deposit_amount);
+    }
+
+    #[payable]
+    pub fn deposit_to(&mut self, recipient: AccountId, deposit_amount: U128) {
         let initial_storage = env::storage_usage();
 
         // As attached deposit includes tokens for storage, deposit amount needs to be explicit
@@ -93,9 +98,8 @@ impl FungibleToken {
         }
 
         //TODO: the core logic could be in its own mint and burn methods
-        // Top up account balance
-        let predecessor_account_id = env::predecessor_account_id();
-        self.mint(&predecessor_account_id, deposit_amount.clone());
+        // Mint to recipient
+        self.mint(&recipient, deposit_amount.clone());
 
         // Check we have enough attached deposit
         let current_storage = env::storage_usage();
@@ -125,7 +129,7 @@ impl FungibleToken {
 
         if refund_amount > 0 {
             env::log(format!("Refunding {} excess tokens", refund_amount).as_bytes());
-            Promise::new(predecessor_account_id).transfer(refund_amount);
+            Promise::new(env::predecessor_account_id()).transfer(refund_amount);
         }
     }
 

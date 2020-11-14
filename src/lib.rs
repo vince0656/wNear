@@ -227,10 +227,10 @@ impl FungibleToken {
 
         //TODO: add test for this
         // Stop people accidentally sending tokens to the contract
-        // assert_ne!(
-        //     new_owner_id, env::current_account_id(),
-        //     "Invalid transfer to this contract"
-        // );
+        assert_ne!(
+            new_owner_id, env::current_account_id(),
+            "Invalid transfer to this contract"
+        );
 
         assert!(
             env::is_valid_account_id(new_owner_id.as_bytes()),

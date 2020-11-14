@@ -99,6 +99,11 @@ impl FungibleToken {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
+        assert_ne!(
+            recipient, env::current_account_id(),
+            "Invalid transfer to this contract"
+        );
+
         assert!(
             env::is_valid_account_id(recipient.as_bytes()),
             "New owner's account ID is invalid"
@@ -155,6 +160,11 @@ impl FungibleToken {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
 
+        assert_ne!(
+            recipient, env::current_account_id(),
+            "Invalid transfer to this contract"
+        );
+
         assert!(
             env::is_valid_account_id(recipient.as_bytes()),
             "New owner's account ID is invalid"
@@ -178,6 +188,11 @@ impl FungibleToken {
         if amount == 0 {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
+
+        assert_ne!(
+            recipient, env::current_account_id(),
+            "Invalid transfer to this contract"
+        );
 
         assert!(
             env::is_valid_account_id(recipient.as_bytes()),

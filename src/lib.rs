@@ -452,6 +452,34 @@ mod w_near_tests {
     }
 
     #[test]
+    fn test_simple_deposit_and_withdrawal() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount.clone() + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        contract.deposit(deposit_amount.clone().into());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        // TODO: check contract balance == deposit amount
+        assert_eq!(contract.get_balance(carol()).0, deposit_amount);
+        assert_eq!(contract.get_total_supply().0, deposit_amount);
+
+        contract.withdraw(deposit_amount.clone().into());
+
+        assert_eq!(contract.get_balance(carol()).0, 0);
+        assert_eq!(contract.get_total_supply().0, 0);
+    }
+
+    #[test]
     fn test_transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

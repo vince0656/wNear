@@ -84,32 +84,32 @@ impl FungibleToken {
 
     /// Deposit NEAR and send wNear to the predecessor account
     #[payable]
-    pub fn deposit(&mut self, deposit_amount: U128) {
-        self.deposit_to(env::predecessor_account_id(), deposit_amount);
+    pub fn deposit(&mut self, amount: U128) {
+        self.deposit_to(env::predecessor_account_id(), amount);
     }
 
     /// Deposit NEAR and send wNear to a specific recipient rather than the predecessor account
     #[payable]
-    pub fn deposit_to(&mut self, recipient: AccountId, deposit_amount: U128) {
+    pub fn deposit_to(&mut self, recipient: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
 
         // As attached deposit includes tokens for storage, deposit amount needs to be explicit
-        let deposit_amount: Balance = deposit_amount.into();
-        if deposit_amount == 0 {
+        let amount: Balance = amount.into();
+        if amount == 0 {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
         // Mint to recipient
-        self.mint(&recipient, deposit_amount.clone());
+        self.mint(&recipient, amount.clone());
 
         // Check we have enough attached deposit
         let current_storage = env::storage_usage();
         let attached_deposit = env::attached_deposit();
         let required_deposit_for_tokens_and_storage = if current_storage > initial_storage {
             (Balance::from(current_storage - initial_storage) * STORAGE_PRICE_PER_BYTE)
-            + deposit_amount
+            + amount
         } else {
-            deposit_amount
+            amount
         };
 
         assert!(
@@ -119,7 +119,7 @@ impl FungibleToken {
             attached_deposit,
         );
 
-        env::log(format!("{} wNear tokens minted", deposit_amount).as_bytes());
+        env::log(format!("{} wNear tokens minted", amount).as_bytes());
 
         // Send back any money that is sent over value for required_deposit_for_tokens_and_storage
         let refund_amount = if attached_deposit > required_deposit_for_tokens_and_storage {
@@ -134,9 +134,13 @@ impl FungibleToken {
         }
     }
 
-    //TODO: is payable needed to pay for storage costs?
     #[payable]
     pub fn withdraw(&mut self, amount: U128) {
+        self.withdraw_to(env::predecessor_account_id(), amount);
+    }
+
+    #[payable]
+    pub fn withdraw_to(&mut self, recipient: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
 
         let amount: Balance = amount.into();
@@ -144,12 +148,11 @@ impl FungibleToken {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
 
-        let predecessor_account_id = env::predecessor_account_id();
-        self.burn(&predecessor_account_id, amount.clone());
+        self.burn(&env::predecessor_account_id(), amount.clone());
 
         // Send near `amount` to predecessor_account_id
         env::log(format!("Withdrawal of {} wNear", amount).as_bytes());
-        Promise::new(predecessor_account_id).transfer(amount);
+        Promise::new(recipient).transfer(amount);
 
         self.refund_storage(initial_storage);
     }

@@ -99,6 +99,11 @@ impl FungibleToken {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
+        assert!(
+            env::is_valid_account_id(recipient.as_bytes()),
+            "New owner's account ID is invalid"
+        );
+
         // Mint to recipient
         self.mint(&recipient, amount.clone());
 
@@ -150,9 +155,38 @@ impl FungibleToken {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
 
+        assert!(
+            env::is_valid_account_id(recipient.as_bytes()),
+            "New owner's account ID is invalid"
+        );
+
         self.burn(&env::predecessor_account_id(), amount.clone());
 
-        // Send near `amount` to predecessor_account_id
+        // Send near `amount` to recipient
+        env::log(format!("Withdrawal of {} wNear", amount).as_bytes());
+        Promise::new(recipient).transfer(amount);
+
+        self.refund_storage(initial_storage);
+    }
+
+    /// The withdraw_from function allows to unwrap wNear from an owner wallet to a recipient wallet, as long as the owner called approve
+    #[payable]
+    pub fn withdraw_from(&mut self, owner_id: AccountId, recipient: AccountId, amount: U128) {
+        let initial_storage = env::storage_usage();
+
+        let amount: Balance = amount.into();
+        if amount == 0 {
+            env::panic(b"Withdrawal amount must be greater than zero");
+        }
+
+        assert!(
+            env::is_valid_account_id(recipient.as_bytes()),
+            "New owner's account ID is invalid"
+        );
+
+        self.burn(&owner_id, amount.clone());
+
+        // Send near `amount` to recipient
         env::log(format!("Withdrawal of {} wNear", amount).as_bytes());
         Promise::new(recipient).transfer(amount);
 

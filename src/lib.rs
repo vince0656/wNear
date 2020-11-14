@@ -75,10 +75,9 @@ impl FungibleToken {
     #[init]
     pub fn new() -> Self {
         assert!(!env::state_exists(), "Already initialized");
-        let total_supply = Balance::from(0u128);
         Self {
             accounts: LookupMap::new(b"a".to_vec()),
-            total_supply
+            total_supply: Balance::from(0u128)
         }
     }
 

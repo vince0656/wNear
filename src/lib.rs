@@ -99,7 +99,6 @@ impl FungibleToken {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
-        //TODO: the core logic could be in its own mint and burn methods
         // Mint to recipient
         self.mint(&recipient, deposit_amount.clone());
 
@@ -146,19 +145,7 @@ impl FungibleToken {
         }
 
         let predecessor_account_id = env::predecessor_account_id();
-        let mut account = self.get_account(&predecessor_account_id);
-
-        if account.balance < amount {
-            env::panic(b"You cannot withdraw more than your balance");
-        }
-
-        account.balance -= amount;
-
-        // Saving the account back to the state.
-        self.set_account(&predecessor_account_id, &account);
-
-        // Decrease total supply
-        self.total_supply -= amount;
+        self.burn(&predecessor_account_id, amount.clone());
 
         // Send near `amount` to predecessor_account_id
         env::log(format!("Withdrawal of {} wNear", amount).as_bytes());
@@ -325,6 +312,20 @@ impl FungibleToken {
 
         // Increase total supply
         self.total_supply += amount;
+    }
+
+    fn burn(&mut self, owner_id: &AccountId, amount: Balance) {
+        let mut account = self.get_account(&owner_id);
+
+        if account.balance < amount {
+            env::panic(b"Burning more than the account balance");
+        }
+
+        account.balance -= amount;
+        self.set_account(&owner_id, &account);
+
+        // Decrease total supply
+        self.total_supply -= amount;
     }
 
     /// Helper method to get the account details for `owner_id`.

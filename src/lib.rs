@@ -99,14 +99,14 @@ impl FungibleToken {
             env::panic(b"Deposit amount must be greater than zero");
         }
 
-        assert_ne!(
-            recipient, env::current_account_id(),
-            "Invalid transfer to this contract"
-        );
-
         assert!(
             env::is_valid_account_id(recipient.as_bytes()),
             "New owner's account ID is invalid"
+        );
+
+        assert_ne!(
+            recipient, env::current_account_id(),
+            "Invalid transfer to this contract"
         );
 
         // Mint to recipient
@@ -160,14 +160,14 @@ impl FungibleToken {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
 
-        assert_ne!(
-            recipient, env::current_account_id(),
-            "Invalid transfer to this contract"
-        );
-
         assert!(
             env::is_valid_account_id(recipient.as_bytes()),
             "New owner's account ID is invalid"
+        );
+
+        assert_ne!(
+            recipient, env::current_account_id(),
+            "Invalid transfer to this contract"
         );
 
         self.burn(&env::predecessor_account_id(), amount.clone());
@@ -189,15 +189,29 @@ impl FungibleToken {
             env::panic(b"Withdrawal amount must be greater than zero");
         }
 
+        assert!(
+            env::is_valid_account_id(recipient.as_bytes()),
+            "New owner's account ID is invalid"
+        );
+
         assert_ne!(
             recipient, env::current_account_id(),
             "Invalid transfer to this contract"
         );
 
-        assert!(
-            env::is_valid_account_id(recipient.as_bytes()),
-            "New owner's account ID is invalid"
+        assert_ne!(
+            owner_id, recipient,
+            "The new owner should be different from the current owner"
         );
+
+        // Need to check and update allowance.
+        let escrow_account_id = env::predecessor_account_id();
+        let mut account = self.get_account(&owner_id);
+        let allowance = account.get_allowance(&escrow_account_id);
+        if allowance < amount {
+            env::panic(b"Not enough allowance");
+        }
+        account.set_allowance(&escrow_account_id, allowance - amount);
 
         self.burn(&owner_id, amount.clone());
 

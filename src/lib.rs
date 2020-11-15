@@ -764,6 +764,48 @@ mod w_near_tests {
     }
 
     #[test]
+    #[should_panic(expected = "New owner's account ID is invalid")]
+    fn withdraw_from_fails_when_the_recipient_is_invalid() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(alice(), invalid_account_id(), ZERO_U128.into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid transfer to this contract")]
+    fn withdraw_from_fails_when_the_recipient_is_the_w_near_contract() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(alice(), w_near(), ZERO_U128.into());
+    }
+
+    #[test]
+    #[should_panic(expected = "The new owner should be different from the current owner")]
+    fn withdraw_from_fails_when_the_owner_and_recipient_are_the_same() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(alice(), alice(), ZERO_U128.into());
+    }
+
+    #[test]
     fn transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

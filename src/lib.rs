@@ -500,7 +500,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_contract_creation_with_new() {
+    fn contract_creation_with_new() {
         testing_env!(get_context(carol()));
         //let total_supply = 1_000_000_000_000_000u128;
         let contract = FungibleToken::new();
@@ -512,13 +512,13 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Contract should be initialized before usage.")]
-    fn test_default_fails() {
+    fn default_fails() {
         testing_env!(get_context(carol()));
         let _contract = FungibleToken::default();
     }
 
     #[test]
-    fn test_deposit() {
+    fn deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -541,7 +541,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_deposit_to_bob_from_carol() {
+    fn deposit_to_bob_from_carol() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -566,7 +566,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Deposit amount must be greater than zero")]
-    fn test_deposit_fails_when_amount_is_zero() {
+    fn deposit_fails_when_amount_is_zero() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -580,7 +580,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "New owner's account ID is invalid")]
-    fn test_deposit_to_fails_when_recipient_is_invalid() {
+    fn deposit_to_fails_when_recipient_is_invalid() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -594,7 +594,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Invalid transfer to this contract")]
-    fn test_deposit_to_fails_when_recipient_is_w_near_contract() {
+    fn deposit_to_fails_when_recipient_is_w_near_contract() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -608,7 +608,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "The required attached deposit is 13300001000000000000000, but the given attached deposit is is 13300000000000000000000")]
-    fn test_deposit_to_fails_when_the_required_deposit_is_not_attached() {
+    fn deposit_to_fails_when_the_required_deposit_is_not_attached() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -625,7 +625,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_simple_deposit_and_withdrawal() {
+    fn simple_deposit_and_withdrawal() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -654,7 +654,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Withdrawal amount must be greater than zero")]
-    fn test_withdraw_fails_when_withdrawal_amount_is_zero() {
+    fn withdraw_fails_when_withdrawal_amount_is_zero() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -667,7 +667,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_transfer_after_deposit() {
+    fn transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -694,7 +694,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "The new owner should be different from the current owner")]
-    fn test_transfer_fail_self() {
+    fn transfer_fail_self() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -713,7 +713,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Invalid transfer to this contract")]
-    fn test_transfer_fail_to_contract() {
+    fn transfer_fail_to_contract() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -732,7 +732,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Can not increment allowance for yourself")]
-    fn test_self_inc_allowance_fail() {
+    fn self_inc_allowance_fail() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
 
@@ -746,7 +746,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Can not decrement allowance for yourself")]
-    fn test_self_dec_allowance_fail() {
+    fn self_dec_allowance_fail() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -756,7 +756,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_saturating_dec_allowance() {
+    fn saturating_dec_allowance() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -767,7 +767,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_saturating_inc_allowance() {
+    fn saturating_inc_allowance() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -783,7 +783,7 @@ mod w_near_tests {
     #[should_panic(
     expected = "The required attached deposit is 25700000000000000000000, but the given attached deposit is is 0"
     )]
-    fn test_self_allowance_fail_no_deposit() {
+    fn self_allowance_fail_no_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -793,7 +793,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_carol_escrows_to_bob_transfers_to_alice() {
+    fn carol_escrows_to_bob_transfers_to_alice() {
         // Acting as carol
         let mut context = get_context(carol());
         testing_env!(context.clone());
@@ -842,7 +842,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_self_allowance_set_for_refund() {
+    fn self_allowance_set_for_refund() {
         let mut context = get_context(carol());
         testing_env!(context.clone());
         let mut contract = FungibleToken::new();
@@ -880,7 +880,7 @@ mod w_near_tests {
     }
 
     #[test]
-    fn test_carol_escrows_to_bob_locks_and_transfers_to_alice() {
+    fn carol_escrows_to_bob_locks_and_transfers_to_alice() {
         // Acting as carol
         let mut context = get_context(carol());
         testing_env!(context.clone());

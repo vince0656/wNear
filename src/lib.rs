@@ -474,6 +474,9 @@ mod w_near_tests {
     fn w_near() -> AccountId {
         "w_near.near".to_string()
     }
+    fn invalid_account_id() -> AccountId {
+        "invalid".to_string()
+    }
 
     fn get_context(predecessor_account_id: AccountId) -> VMContext {
         VMContext {
@@ -573,6 +576,20 @@ mod w_near_tests {
         testing_env!(context.clone());
 
         contract.deposit_to(bob(), (0u128).into());
+    }
+
+    #[test]
+    #[should_panic(expected = "New owner's account ID is invalid")]
+    fn test_deposit_to_fails_when_recipient_is_invalid() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.deposit_to(invalid_account_id(), (5u128).into());
     }
 
     #[test]

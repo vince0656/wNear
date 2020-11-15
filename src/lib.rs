@@ -526,7 +526,7 @@ mod w_near_tests {
         context.storage_usage = env::storage_usage();
 
         let deposit_amount = 1_000_000_000_000_000u128;
-        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        context.attached_deposit = deposit_amount + (133 * STORAGE_PRICE_PER_BYTE);
         testing_env!(context.clone());
 
         //assert_eq!(contract.get_near_balance().0, 0);
@@ -549,7 +549,7 @@ mod w_near_tests {
         context.storage_usage = env::storage_usage();
 
         let deposit_amount = 1_000_000_000_000_000u128;
-        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        context.attached_deposit = deposit_amount + (133 * STORAGE_PRICE_PER_BYTE);
         testing_env!(context.clone());
 
         //assert_eq!(contract.get_near_balance().0, 0);

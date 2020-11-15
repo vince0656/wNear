@@ -605,8 +605,27 @@ mod w_near_tests {
         // get some wNear tokens
         contract.deposit(deposit_amount.into());
 
-        let transfer_amount = 1_000_000_000_000_000u128;
+        let transfer_amount = deposit_amount.clone() / 2;
         contract.transfer(carol(), transfer_amount.into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid transfer to this contract")]
+    fn test_transfer_fail_to_contract() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        // get some wNear tokens
+        contract.deposit(deposit_amount.into());
+
+        let transfer_amount = deposit_amount.clone() / 2;
+        contract.transfer(w_near(), transfer_amount.into());
     }
 
     #[test]

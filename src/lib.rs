@@ -633,7 +633,7 @@ mod w_near_tests {
         context.storage_usage = env::storage_usage();
 
         let deposit_amount = 1_000_000_000_000_000u128;
-        context.attached_deposit = deposit_amount.clone() + (1000 * STORAGE_PRICE_PER_BYTE);
+        context.attached_deposit = deposit_amount.clone() + (133 * STORAGE_PRICE_PER_BYTE);
         testing_env!(context.clone());
 
         //assert_eq!(contract.get_near_balance().0, 0);
@@ -650,6 +650,20 @@ mod w_near_tests {
 
         assert_eq!(contract.get_balance(carol()).0, 0);
         assert_eq!(contract.get_total_supply().0, 0);
+    }
+
+    #[test]
+    #[should_panic(expected = "Withdrawal amount must be greater than zero")]
+    fn test_withdraw_fails_when_withdrawal_amount_is_zero() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw(bob(), ZERO_U128.into());
     }
 
     #[test]

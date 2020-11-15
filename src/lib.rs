@@ -203,15 +203,17 @@ impl FungibleToken {
             "The new owner should be different from the current owner"
         );
 
-        // Need to check and update allowance.
+        // If transferring by allowance, need to check and update allowance.
         let escrow_account_id = env::predecessor_account_id();
-        let mut account = self.get_account(&owner_id);
-        let allowance = account.get_allowance(&escrow_account_id);
-        if allowance != std::u128::MAX {
-            if allowance < amount {
-                env::panic(b"Not enough allowance");
+        if escrow_account_id != owner_id {
+            let mut account = self.get_account(&owner_id);
+            let allowance = account.get_allowance(&escrow_account_id);
+            if allowance != std::u128::MAX {
+                if allowance < amount {
+                    env::panic(b"Not enough allowance");
+                }
+                account.set_allowance(&escrow_account_id, allowance - amount);
             }
-            account.set_allowance(&escrow_account_id, allowance - amount);
         }
 
 

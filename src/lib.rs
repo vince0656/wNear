@@ -475,7 +475,7 @@ mod w_near_tests {
         "w_near.near".to_string()
     }
     fn invalid_account_id() -> AccountId {
-        "invalid".to_string()
+        "".to_string()
     }
 
     fn get_context(predecessor_account_id: AccountId) -> VMContext {

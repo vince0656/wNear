@@ -902,7 +902,9 @@ mod w_near_tests {
 
         contract.withdraw_from(carol(), bob(), withdrawal_amount.clone().into());
 
-        assert_eq!(contract.get_balance(bob()).0, withdrawal_amount.clone().into());
+        //todo: check bob's near balance
+        assert_eq!(contract.get_balance(bob()).0, ZERO_U128.into());
+        assert_eq!(contract.get_allowance(carol(), bob()), ZERO_U128.into());
         assert_eq!(contract.get_balance(carol()).0, withdrawal_amount.clone().into());
         assert_eq!(contract.get_total_supply().0, withdrawal_amount.clone().into());
     }

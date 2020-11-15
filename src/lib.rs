@@ -667,6 +667,34 @@ mod w_near_tests {
     }
 
     #[test]
+    #[should_panic(expected = "New owner's account ID is invalid")]
+    fn withdraw_to_fails_when_recipient_is_invalid() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_to(invalid_account_id(), (5u128).into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid transfer to this contract")]
+    fn withdraw_to_fails_when_recipient_is_w_near_contract() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_to(w_near(), (5u128).into());
+    }
+
+    #[test]
     fn transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

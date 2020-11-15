@@ -507,7 +507,7 @@ mod w_near_tests {
 
     #[test]
     #[should_panic(expected = "Contract should be initialized before usage.")]
-    fn test_default() {
+    fn test_default_fails() {
         testing_env!(get_context(carol()));
         let _contract = FungibleToken::default();
     }
@@ -532,6 +532,30 @@ mod w_near_tests {
 
         // TODO: check contract balance == deposit amount
         assert_eq!(contract.get_balance(carol()).0, deposit_amount);
+        assert_eq!(contract.get_total_supply().0, deposit_amount);
+    }
+
+    #[test]
+    fn test_deposit_to_bob_from_carol() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        contract.deposit_to(bob(), deposit_amount.into());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        // TODO: check contract balance == deposit amount
+        assert_eq!(contract.get_balance(carol()).0, 0);
+        assert_eq!(contract.get_balance(bob()).0, deposit_amount);
         assert_eq!(contract.get_total_supply().0, deposit_amount);
     }
 

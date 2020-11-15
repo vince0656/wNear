@@ -607,6 +607,24 @@ mod w_near_tests {
     }
 
     #[test]
+    #[should_panic(expected = "The required attached deposit is {}, but the given attached deposit is is 0")]
+    fn test_deposit_to_fails_when_the_required_deposit_is_not_attached() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        contract.deposit(deposit_amount.into());
+    }
+
+    #[test]
     fn test_simple_deposit_and_withdrawal() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

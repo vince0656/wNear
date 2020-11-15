@@ -378,6 +378,7 @@ impl FungibleToken {
 }
 
 impl FungibleToken {
+    /// Mint `amount` to `recipient` AccountId
     fn mint(&mut self, recipient: &AccountId, amount: Balance) {
         if self.total_supply == std::u128::MAX {
             env::panic(b"Total supply limit reached");
@@ -395,6 +396,7 @@ impl FungibleToken {
         self.total_supply += amount;
     }
 
+    /// Burn `amount` from `owner_id` AccountId
     fn burn(&mut self, owner_id: &AccountId, amount: Balance) {
         let mut account = self.get_account(&owner_id);
 
@@ -557,6 +559,20 @@ mod w_near_tests {
         assert_eq!(contract.get_balance(carol()).0, 0);
         assert_eq!(contract.get_balance(bob()).0, deposit_amount);
         assert_eq!(contract.get_total_supply().0, deposit_amount);
+    }
+
+    #[test]
+    #[should_panic(expected = "Deposit amount must be greater than zero")]
+    fn test_deposit_fails_when_amount_is_zero() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.deposit_to(bob(), 0);
     }
 
     #[test]

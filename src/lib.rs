@@ -848,10 +848,9 @@ mod w_near_tests {
         // give bob allowance to withdraw some tokens
         assert_eq!(contract.get_allowance(carol(), bob()), ZERO_U128.into());
 
-        let allowance = deposit_amount.clone() / 2;
-        contract.inc_allowance(bob(), allowance.into());
+        contract.inc_allowance(bob(), std::u128::MAX.into());
 
-        assert_eq!(contract.get_allowance(carol(), bob()), allowance.clone().into());
+        assert_eq!(contract.get_allowance(carol(), bob()), std::u128::MAX.into());
 
         // switch to a context with bob
         let mut context = get_context(bob());

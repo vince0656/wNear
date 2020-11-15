@@ -667,4 +667,53 @@ mod w_near_tests {
         testing_env!(context.clone());
         contract.inc_allowance(bob(), 5.into());
     }
+
+    #[test]
+    fn test_carol_escrows_to_bob_transfers_to_alice() {
+        // Acting as carol
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        context.is_view = true;
+        testing_env!(context.clone());
+        assert_eq!(contract.get_total_supply().0, 0);
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        let allowance = deposit_amount.clone() / 3;
+        let transfer_amount = allowance / 3;
+        context.is_view = false;
+
+        context.attached_deposit = deposit_amount + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        // get some wNear tokens
+        contract.deposit(deposit_amount.into());
+
+        contract.inc_allowance(bob(), allowance.into());
+        context.storage_usage = env::storage_usage();
+        context.account_balance = env::account_balance();
+
+        context.is_view = true;
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+        assert_eq!(contract.get_allowance(carol(), bob()).0, allowance);
+
+        // Acting as bob now
+        context.is_view = false;
+        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
+        context.predecessor_account_id = bob();
+        testing_env!(context.clone());
+        contract.transfer_from(carol(), alice(), transfer_amount.into());
+        context.storage_usage = env::storage_usage();
+        context.account_balance = env::account_balance();
+
+        context.is_view = true;
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+        assert_eq!(contract.get_balance(carol()).0, total_supply - transfer_amount);
+        assert_eq!(contract.get_balance(alice()).0, transfer_amount);
+        assert_eq!(contract.get_allowance(carol(), bob()).0, allowance - transfer_amount);
+    }
 }

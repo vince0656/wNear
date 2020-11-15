@@ -653,6 +653,35 @@ mod w_near_tests {
     }
 
     #[test]
+    fn simple_deposit_by_carol_and_withdrawal_to_alice() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount.clone() + (133 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        contract.deposit(deposit_amount.clone().into());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        // TODO: check contract balance == deposit amount
+        assert_eq!(contract.get_balance(carol()).0, deposit_amount);
+        assert_eq!(contract.get_total_supply().0, deposit_amount);
+
+        contract.withdraw_to(alice(), deposit_amount.clone().into());
+
+        // TODO: check alice near balance has increased
+        assert_eq!(contract.get_balance(carol()).0, 0);
+        assert_eq!(contract.get_total_supply().0, 0);
+    }
+
+    #[test]
     #[should_panic(expected = "Withdrawal amount must be greater than zero")]
     fn withdraw_fails_when_withdrawal_amount_is_zero() {
         let mut context = get_context(carol());

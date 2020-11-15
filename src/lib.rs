@@ -822,6 +822,47 @@ mod w_near_tests {
     }
 
     #[test]
+    #[should_panic(expected = "Burning more than the account balance")]
+    fn withdraw_from_fails_when_trying_to_withdraw_more_than_owners_balance() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let deposit_amount = 1_000_000_000_000_000u128;
+        context.attached_deposit = deposit_amount.clone() + (1000 * STORAGE_PRICE_PER_BYTE);
+        testing_env!(context.clone());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        // get some wNear for carol
+        contract.deposit(deposit_amount.clone().into());
+
+        //assert_eq!(contract.get_near_balance().0, 0);
+
+        // TODO: check contract balance == deposit amount
+        assert_eq!(contract.get_balance(carol()).0, deposit_amount);
+        assert_eq!(contract.get_total_supply().0, deposit_amount);
+
+        // give bob allowance to withdraw some tokens
+        assert_eq!(contract.get_allowance(carol(), bob()), ZERO_U128.into());
+
+        let allowance = deposit_amount.clone() / 2;
+        contract.inc_allowance(bob(), allowance);
+
+        assert_eq!(contract.get_allowance(carol(), bob()), allowance.clone());
+
+        // switch to a context with bob
+        let mut context = get_context(bob());
+        testing_env!(context.clone());
+        context.attached_deposit = 1000 * STORAGE_PRICE_PER_BYTE;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(carol(), bob(), (deposit_amount.clone()+1).into());
+    }
+
+    #[test]
     fn transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

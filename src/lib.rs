@@ -750,6 +750,20 @@ mod w_near_tests {
     }
 
     #[test]
+    #[should_panic(expected = "Withdrawal amount must be greater than zero")]
+    fn withdraw_from_fails_when_the_withdrawal_amount_is_zero() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(alice(), carol(), ZERO_U128.into());
+    }
+
+    #[test]
     fn transfer_after_deposit() {
         let mut context = get_context(carol());
         testing_env!(context.clone());

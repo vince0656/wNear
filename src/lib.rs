@@ -285,7 +285,6 @@ impl FungibleToken {
     pub fn transfer_from(&mut self, owner_id: AccountId, new_owner_id: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
 
-        //TODO: add test for this
         // Stop people accidentally sending tokens to the contract
         assert_ne!(
             new_owner_id, env::current_account_id(),
@@ -737,5 +736,43 @@ mod w_near_tests {
         assert_eq!(contract.get_balance(carol()).0, deposit_amount.clone() - transfer_amount);
         assert_eq!(contract.get_balance(alice()).0, transfer_amount);
         assert_eq!(contract.get_allowance(carol(), bob()).0, allowance - transfer_amount);
+    }
+
+    #[test]
+    fn test_self_allowance_set_for_refund() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+
+        let initial_balance = context.account_balance;
+        let initial_storage = context.storage_usage;
+        context.attached_deposit = STORAGE_PRICE_PER_BYTE * 1000;
+        testing_env!(context.clone());
+        let allowance_amount = 1_000_000_000_000_000u128;
+        contract.inc_allowance(bob(), (allowance_amount.clone() / 2).into());
+        context.storage_usage = env::storage_usage();
+        context.account_balance = env::account_balance();
+        assert_eq!(
+            context.account_balance,
+            initial_balance
+                + Balance::from(context.storage_usage - initial_storage) * STORAGE_PRICE_PER_BYTE
+        );
+
+        let initial_balance = context.account_balance;
+        let initial_storage = context.storage_usage;
+        testing_env!(context.clone());
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+        contract.dec_allowance(bob(), (allowance_amount.clone() / 2).into());
+        context.storage_usage = env::storage_usage();
+        context.account_balance = env::account_balance();
+        assert!(context.storage_usage < initial_storage);
+        assert!(context.account_balance < initial_balance);
+        assert_eq!(
+            context.account_balance,
+            initial_balance
+                - Balance::from(initial_storage - context.storage_usage) * STORAGE_PRICE_PER_BYTE
+        );
     }
 }

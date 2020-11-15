@@ -849,9 +849,9 @@ mod w_near_tests {
         assert_eq!(contract.get_allowance(carol(), bob()), ZERO_U128.into());
 
         let allowance = deposit_amount.clone() / 2;
-        contract.inc_allowance(bob(), allowance);
+        contract.inc_allowance(bob(), allowance.into());
 
-        assert_eq!(contract.get_allowance(carol(), bob()), allowance.clone());
+        assert_eq!(contract.get_allowance(carol(), bob()), allowance.clone().into());
 
         // switch to a context with bob
         let mut context = get_context(bob());

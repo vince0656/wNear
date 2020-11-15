@@ -470,10 +470,13 @@ mod w_near_tests {
     fn carol() -> AccountId {
         "carol.near".to_string()
     }
+    fn w_near() -> AccountId {
+        "w_near.near".to_string()
+    }
 
     fn get_context(predecessor_account_id: AccountId) -> VMContext {
         VMContext {
-            current_account_id: alice(),
+            current_account_id: w_near(),
             signer_account_id: bob(),
             signer_account_pk: vec![0, 1, 2],
             predecessor_account_id,

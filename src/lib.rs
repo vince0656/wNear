@@ -712,7 +712,7 @@ mod w_near_tests {
         context.is_view = true;
         context.attached_deposit = 0;
         testing_env!(context.clone());
-        assert_eq!(contract.get_balance(carol()).0, total_supply - transfer_amount);
+        assert_eq!(contract.get_balance(carol()).0, deposit_amount.clone() - transfer_amount);
         assert_eq!(contract.get_balance(alice()).0, transfer_amount);
         assert_eq!(contract.get_allowance(carol(), bob()).0, allowance - transfer_amount);
     }

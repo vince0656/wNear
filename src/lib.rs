@@ -774,7 +774,7 @@ mod w_near_tests {
         context.attached_deposit = 0;
         testing_env!(context.clone());
 
-        contract.withdraw_from(alice(), invalid_account_id(), ZERO_U128.into());
+        contract.withdraw_from(alice(), invalid_account_id(), (5u128).into());
     }
 
     #[test]
@@ -788,7 +788,7 @@ mod w_near_tests {
         context.attached_deposit = 0;
         testing_env!(context.clone());
 
-        contract.withdraw_from(alice(), w_near(), ZERO_U128.into());
+        contract.withdraw_from(alice(), w_near(), (5u128).into());
     }
 
     #[test]
@@ -802,7 +802,7 @@ mod w_near_tests {
         context.attached_deposit = 0;
         testing_env!(context.clone());
 
-        contract.withdraw_from(alice(), alice(), ZERO_U128.into());
+        contract.withdraw_from(alice(), alice(), (5u128).into());
     }
 
     #[test]

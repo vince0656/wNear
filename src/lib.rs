@@ -663,7 +663,7 @@ mod w_near_tests {
         context.attached_deposit = 0;
         testing_env!(context.clone());
 
-        contract.withdraw(bob(), ZERO_U128.into());
+        contract.withdraw(ZERO_U128.into());
     }
 
     #[test]

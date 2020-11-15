@@ -373,6 +373,14 @@ impl FungibleToken {
 
 impl FungibleToken {
     fn mint(&mut self, recipient: &AccountId, amount: Balance) {
+        if self.total_supply == std::u128::MAX {
+            env::panic(b"Total supply limit reached");
+        }
+
+        if std::u128::MAX - self.total_supply < amount {
+            env::panic(b"Amount will exceed max permitted total supply");
+        }
+
         let mut account = self.get_account(&recipient);
         account.balance += amount;
         self.set_account(&recipient, &account);

@@ -572,7 +572,7 @@ mod w_near_tests {
         context.attached_deposit = 0;
         testing_env!(context.clone());
 
-        contract.deposit_to(bob(), 0);
+        contract.deposit_to(bob(), (0u128).into());
     }
 
     #[test]

@@ -208,6 +208,7 @@ impl FungibleToken {
         if escrow_account_id != owner_id {
             let mut account = self.get_account(&owner_id);
             let allowance = account.get_allowance(&escrow_account_id);
+            //TODO: test around infinite approval
             if allowance != std::u128::MAX {
                 if allowance < amount {
                     env::panic(b"Not enough allowance");
@@ -316,6 +317,7 @@ impl FungibleToken {
         let escrow_account_id = env::predecessor_account_id();
         if escrow_account_id != owner_id {
             let allowance = account.get_allowance(&escrow_account_id);
+            //TODO: test around infinite approval
             if allowance != std::u128::MAX {
                 if allowance < amount {
                     env::panic(b"Not enough allowance");
@@ -803,6 +805,20 @@ mod w_near_tests {
         testing_env!(context.clone());
 
         contract.withdraw_from(alice(), alice(), (5u128).into());
+    }
+
+    #[test]
+    #[should_panic(expected = "Not enough allowance")]
+    fn withdraw_from_fails_when_the_escrow_account_does_not_have_enough_allowance() {
+        let mut context = get_context(carol());
+        testing_env!(context.clone());
+
+        let mut contract = FungibleToken::new();
+        context.storage_usage = env::storage_usage();
+        context.attached_deposit = 0;
+        testing_env!(context.clone());
+
+        contract.withdraw_from(alice(), bob(), (5u128).into());
     }
 
     #[test]

@@ -21,4 +21,22 @@ When using `deposit_to`, the following requirements apply:
 * Recipient needs to be a valid account Id
 * Amount must be a positive integer
 
-Both deposit methods will require an attached deposit that covers the storage requirements as well as the amount of `wNear` tokens being minted.
+Both deposit methods will require an attached deposit that covers the storage requirements and the amount of `wNear` tokens being minted.
+
+## Withdrawing Near
+
+The following methods are available for unwrapping wNear:
+* `withdraw(amount)`
+* `withdraw_to(recipient, amount)`
+* `withdraw_from(owner_id, recipient, amount)`
+
+Like `deposit()`, `withdraw()` is the simplest and can be called by the owner of `wNear` tokens to claim the underlying Near Ⓝ asset.
+
+When using `withdraw_to`, the following requirements apply:
+* Recipient cannot be the wNear contract - to stop people accidentally losing money
+* Recipient needs to be a valid account Id
+* Amount must be a positive integer
+
+Caller must have a balance that is greater than or equal to `amount`.
+
+`withdraw_from` (like `withdraw_to`) comes from WETH10 and allows an approved account to unwrap `wNear` from an `owner` who has a `wNear` balance.

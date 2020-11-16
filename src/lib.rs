@@ -1,7 +1,12 @@
 /**
 * wNear NEP21 Token contract
 *
-* Based on: https://github.com/near/near-sdk-rs/blob/ab5c01ca4c61a6414484b69302b84e5ce3113f2f/examples/fungible-token/src/lib.rs
+* NEP21 Based on:
+* https://github.com/near/near-sdk-rs/blob/ab5c01ca4c61a6414484b69302b84e5ce3113f2f/examples/fungible-token/src/lib.rs
+*
+* The aim of the contract is to enable the wrapping of the native Ⓝ token into a NEP21 compatible token.
+* It's the equivalent of wrapping ETH into wETH via the WETH. This contract is based on the functionality
+* of the WETH9 and WETH10 Solidity smart contracts.
 */
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LookupMap;

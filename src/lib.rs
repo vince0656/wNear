@@ -82,12 +82,25 @@ impl FungibleToken {
     }
 
     /// Deposit NEAR and send wNear tokens to the predecessor account
+    /// Requirements:
+    /// * `amount` must be a positive integer
+    /// * Caller of the method has to attach deposit enough to cover:
+    ///   * The `amount` of wNear tokens being minted, and
+    ///   * The storage difference at the fixed storage price defined in the contract.
     #[payable]
     pub fn deposit(&mut self, amount: U128) {
+        // Proxy through to deposit_to() making the recipient the predecessor
         self.deposit_to(env::predecessor_account_id(), amount);
     }
 
     /// Deposit NEAR from the predecessor account and send wNear to a specific recipient
+    /// Requirements:
+    /// * `recipient` cannot be this contract
+    /// * `recipient` must be a valid account Id
+    /// * `amount` must be a positive integer
+    /// * Caller of the method has to attach deposit enough to cover:
+    ///   * The `amount` of wNear tokens being minted, and
+    ///   * The storage difference at the fixed storage price defined in the contract.
     #[payable]
     pub fn deposit_to(&mut self, recipient: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
@@ -143,13 +156,26 @@ impl FungibleToken {
         }
     }
 
-    /// Burns wNear and send Near back to the predecessor account
+    /// Unwrap wNear and send Near back to the predecessor account
+    /// Requirements:
+    /// * `amount` must be a positive integer
+    /// * Caller must have a balance that is greater than or equal to `amount`
+    /// * Caller of the method has to attach deposit enough to cover storage difference at the
+    ///   fixed storage price defined in the contract.
     #[payable]
     pub fn withdraw(&mut self, amount: U128) {
+        // Proxy through to withdraw_to() sending the Near to the predecessor account
         self.withdraw_to(env::predecessor_account_id(), amount);
     }
 
-    /// Burns wNear from the predecessor account and send Near to a specific recipient
+    /// Unwraps wNear from the predecessor account and sends the Near to a specific recipient
+    /// Requirements:
+    /// * `recipient` cannot be this contract
+    /// * `recipient` must be a valid account Id
+    /// * `amount` should be a positive integer
+    /// * Caller must have a balance that is greater than or equal to `amount`.
+    /// * Caller of the method has to attach deposit enough to cover storage difference at the
+    ///   fixed storage price defined in the contract.
     #[payable]
     pub fn withdraw_to(&mut self, recipient: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
@@ -169,6 +195,7 @@ impl FungibleToken {
             "Invalid transfer to this contract"
         );
 
+        // Decrease the predecessor's wNear balance and reduce total supply
         self.burn(&env::predecessor_account_id(), amount.clone());
 
         // Send near `amount` to recipient
@@ -178,7 +205,19 @@ impl FungibleToken {
         self.refund_storage(initial_storage);
     }
 
-    /// The withdraw_from function allows to unwrap wNear from an owner wallet to a recipient wallet, as long as the owner called approve
+    /// The withdraw_from function allows to unwrap wNear from an owner wallet to a recipient wallet
+    /// Requirements:
+    /// * `recipient` of the Near tokens cannot be this contract
+    /// * `recipient` must be a valid account Id
+    /// * `recipient` cannot be the same as `owner_id`. Use `withdraw()` in that scenario.
+    /// * `amount` should be a positive integer.
+    /// * `owner_id` should have balance on the account greater or equal than the withdraw `amount`.
+    /// * If this function is called by an escrow account (`owner_id != predecessor_account_id`),
+    ///   then the allowance of the caller of the function (`predecessor_account_id`) on
+    ///   the account of `owner_id` should be greater or equal than the transfer `amount`.
+    /// * Alternatively, if they have infinite approval, their approval amount wont be reduced.
+    /// * Caller of the method has to attach deposit enough to cover storage difference at the
+    ///   fixed storage price defined in the contract.
     #[payable]
     pub fn withdraw_from(&mut self, owner_id: AccountId, recipient: AccountId, amount: U128) {
         let initial_storage = env::storage_usage();
@@ -208,7 +247,6 @@ impl FungibleToken {
         if escrow_account_id != owner_id {
             let mut account = self.get_account(&owner_id);
             let allowance = account.get_allowance(&escrow_account_id);
-            //TODO: test around infinite approval
             if allowance != std::u128::MAX {
                 if allowance < amount {
                     env::panic(b"Not enough allowance");
@@ -275,11 +313,13 @@ impl FungibleToken {
 
     /// Transfers the `amount` of tokens from `owner_id` to the `new_owner_id`.
     /// Requirements:
+    /// * Recipient of the wNear tokens cannot be this contract
     /// * `amount` should be a positive integer.
     /// * `owner_id` should have balance on the account greater or equal than the transfer `amount`.
     /// * If this function is called by an escrow account (`owner_id != predecessor_account_id`),
     ///   then the allowance of the caller of the function (`predecessor_account_id`) on
     ///   the account of `owner_id` should be greater or equal than the transfer `amount`.
+    /// * Alternatively, if they have infinite approval, their approval amount wont be reduced.
     /// * Caller of the method has to attach deposit enough to cover storage difference at the
     ///   fixed storage price defined in the contract.
     #[payable]
@@ -317,7 +357,6 @@ impl FungibleToken {
         let escrow_account_id = env::predecessor_account_id();
         if escrow_account_id != owner_id {
             let allowance = account.get_allowance(&escrow_account_id);
-            //TODO: test around infinite approval
             if allowance != std::u128::MAX {
                 if allowance < amount {
                     env::panic(b"Not enough allowance");
@@ -360,7 +399,7 @@ impl FungibleToken {
         self.get_account(&owner_id).balance.into()
     }
 
-    //TODO: docs + test
+    /// Proxy method for returning the Near balance of the account where the contract is deployed
     pub fn get_near_balance(&self) -> U128 {
         env::account_balance().into()
     }
@@ -380,7 +419,7 @@ impl FungibleToken {
 }
 
 impl FungibleToken {
-    /// Mint `amount` to `recipient` AccountId
+    /// Internal method for minting an `amount` to `recipient` AccountId
     fn mint(&mut self, recipient: &AccountId, amount: Balance) {
         if self.total_supply == std::u128::MAX {
             env::panic(b"Total supply limit reached");
@@ -398,7 +437,7 @@ impl FungibleToken {
         self.total_supply += amount;
     }
 
-    /// Burn `amount` from `owner_id` AccountId
+    /// Internal method for burning an `amount` from `owner_id` AccountId
     fn burn(&mut self, owner_id: &AccountId, amount: Balance) {
         let mut account = self.get_account(&owner_id);
 

@@ -404,11 +404,6 @@ impl FungibleToken {
         self.get_account(&owner_id).balance.into()
     }
 
-    /// Proxy method for returning the Near balance of the account where the contract is deployed
-    pub fn get_near_balance(&self) -> U128 {
-        env::account_balance().into()
-    }
-
     /// Returns current allowance of `escrow_account_id` for the account of `owner_id`.
     ///
     /// NOTE: Other contracts should not rely on this information, because by the moment a contract
